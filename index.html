@@ -1,61 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Gov Budget Tracker</title>
+  <title>Government Budget Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/web3@1.8.2/dist/web3.min.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f8ff;
-      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e6f0ff, #ffffff);
       margin: 0;
+      padding: 0;
     }
 
-    header {
-      background-color: #004080;
-      color: white;
-      padding: 15px;
+    #metaStatus {
+      background: #ffe0cc;
+      color: #800000;
+      padding: 12px;
       text-align: center;
-    }
-
-    #walletAddress {
-      background: #e6f0ff;
-      color: #004080;
-      text-align: center;
-      padding: 10px;
       font-weight: bold;
     }
 
-    .section {
-      background-color: white;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      margin: 20px auto;
+    h2 {
+      text-align: center;
       padding: 20px;
-      max-width: 500px;
-      box-shadow: 0 0 10px #ccc;
+      color: #004080;
+      background-color: #cce0ff;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .section {
+      background-color: #f9f9f9;
+      border: 1px solid #d1d1d1;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 0 auto 30px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    h3 {
+      color: #003366;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
     }
 
     label {
+      font-weight: bold;
+      margin-top: 12px;
       display: block;
-      margin-top: 10px;
     }
 
-    input {
+    input[type="text"],
+    input[type="number"] {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       margin-top: 5px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
     }
 
     button {
-      margin-top: 15px;
       background-color: #004080;
       color: white;
       border: none;
-      padding: 10px 15px;
+      padding: 10px 18px;
+      border-radius: 6px;
       cursor: pointer;
-      border-radius: 5px;
+      font-size: 15px;
+      transition: background-color 0.3s ease;
     }
 
     button:hover {
@@ -63,114 +80,200 @@
     }
 
     pre {
-      background-color: #f4f4f4;
+      background-color: #e6f0ff;
       padding: 10px;
-      border-radius: 5px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
 
-<header>
-  <h2>Government Budget Tracker</h2>
-</header>
+  <div id="metaStatus">Checking MetaMask...</div>
 
-<div id="walletAddress">Connecting to MetaMask...</div>
+  <h2>Government Budget Tracker (Blockchain)</h2>
 
-<div class="section">
-  <h3>Register Department</h3>
-  <label>Department Address:</label>
-  <input type="text" id="regAddress">
-  <label>Name:</label>
-  <input type="text" id="regName">
-  <label>Initial Funds:</label>
-  <input type="number" id="regFunds">
-  <button onclick="registerDepartment()">Register</button>
-</div>
+  <div class="section">
+    <h3>Register Department</h3>
+    <label>Department Address:</label>
+    <input type="text" id="regAddress">
+    <label>Name:</label>
+    <input type="text" id="regName">
+    <label>Initial Funds:</label>
+    <input type="number" id="regFunds">
+    <button onclick="registerDepartment()">Register</button>
+  </div>
 
-<div class="section">
-  <h3>Allocate Funds</h3>
-  <label>Department Address:</label>
-  <input type="text" id="allocAddress">
-  <label>Amount:</label>
-  <input type="number" id="allocAmount">
-  <button onclick="allocateFunds()">Allocate</button>
-</div>
+  <div class="section">
+    <h3>Allocate More Funds</h3>
+    <label>Department Address:</label>
+    <input type="text" id="allocAddress">
+    <label>Amount:</label>
+    <input type="number" id="allocAmount">
+    <button onclick="allocateFunds()">Allocate</button>
+  </div>
 
-<div class="section">
-  <h3>Spend Funds</h3>
-  <label>Amount:</label>
-  <input type="number" id="spendAmount">
-  <label>Purpose:</label>
-  <input type="text" id="spendPurpose">
-  <button onclick="spendFunds()">Spend</button>
-</div>
+  <div class="section">
+    <h3>Spend Funds (Department Only)</h3>
+    <label>Amount:</label>
+    <input type="number" id="spendAmount">
+    <label>Purpose:</label>
+    <input type="text" id="spendPurpose">
+    <button onclick="spendFunds()">Spend</button>
+  </div>
 
-<div class="section">
-  <h3>Get Department Info</h3>
-  <label>Department Address:</label>
-  <input type="text" id="infoAddress">
-  <button onclick="getInfo()">Get Info</button>
-  <pre id="infoOutput"></pre>
-</div>
+  <div class="section">
+    <h3>Get Department Info</h3>
+    <label>Department Address:</label>
+    <input type="text" id="infoAddress">
+    <button onclick="getInfo()">Get Info</button>
+    <pre id="infoOutput"></pre>
+  </div>
 
-<script>
-  let web3;
-  let contract;
-  let currentAccount;
+  <script>
+    let web3;
+    let contract;
+    let currentAccount;
 
-  const contractAddress = 'YOUR_DEPLOYED_CONTRACT_ADDRESS'; // Replace this
-  const contractABI = PASTE_YOUR_ABI_HERE; // Paste the ABI from Remix
+    const contractAddress = 'YOUR_DEPLOYED_CONTRACT_ADDRESS'; // 👈 Replace this
+    const contractABI = [ /* 👇 Paste your ABI here */
+      {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          { "indexed": false, "internalType": "address", "name": "deptAddress", "type": "address" },
+          { "indexed": false, "internalType": "string", "name": "name", "type": "string" },
+          { "indexed": false, "internalType": "uint256", "name": "allocatedFunds", "type": "uint256" }
+        ],
+        "name": "DepartmentRegistered",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          { "indexed": false, "internalType": "address", "name": "deptAddress", "type": "address" },
+          { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
+        ],
+        "name": "FundsAllocated",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          { "indexed": false, "internalType": "address", "name": "deptAddress", "type": "address" },
+          { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
+          { "indexed": false, "internalType": "string", "name": "purpose", "type": "string" }
+        ],
+        "name": "FundSpent",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          { "internalType": "address", "name": "deptAddress", "type": "address" },
+          { "internalType": "uint256", "name": "amount", "type": "uint256" }
+        ],
+        "name": "allocateMoreFunds",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          { "internalType": "address", "name": "deptAddress", "type": "address" }
+        ],
+        "name": "getDepartmentInfo",
+        "outputs": [
+          { "internalType": "string", "name": "", "type": "string" },
+          { "internalType": "uint256", "name": "", "type": "uint256" },
+          { "internalType": "uint256", "name": "", "type": "uint256" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          { "internalType": "address", "name": "deptAddress", "type": "address" },
+          { "internalType": "string", "name": "name", "type": "string" },
+          { "internalType": "uint256", "name": "initialFunds", "type": "uint256" }
+        ],
+        "name": "registerDepartment",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          { "internalType": "uint256", "name": "amount", "type": "uint256" },
+          { "internalType": "string", "name": "purpose", "type": "string" }
+        ],
+        "name": "spendFunds",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ];
 
-  async function loadWeb3() {
-    if (window.ethereum) {
-      web3 = new Web3(window.ethereum);
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
+    window.addEventListener('load', loadWeb3);
 
-      const accounts = await web3.eth.getAccounts();
-      currentAccount = accounts[0];
-      document.getElementById('walletAddress').innerText = "Connected Wallet: " + currentAccount;
+    async function loadWeb3() {
+      const statusEl = document.getElementById('metaStatus');
 
-      contract = new web3.eth.Contract(contractABI, contractAddress);
-    } else {
-      alert("Please install MetaMask!");
+      if (window.ethereum) {
+        web3 = new Web3(window.ethereum);
+
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          currentAccount = accounts[0];
+
+          statusEl.style.background = '#d4edda';
+          statusEl.style.color = '#155724';
+          statusEl.innerText = "✅ MetaMask Connected: " + currentAccount;
+
+          contract = new web3.eth.Contract(contractABI, contractAddress);
+        } catch (error) {
+          statusEl.style.background = '#f8d7da';
+          statusEl.style.color = '#721c24';
+          statusEl.innerText = "❌ MetaMask connection rejected.";
+        }
+      } else {
+        statusEl.style.background = '#fff3cd';
+        statusEl.style.color = '#856404';
+        statusEl.innerText = "⚠️ MetaMask not detected. Please install MetaMask.";
+      }
     }
-  }
 
-  async function registerDepartment() {
-    const addr = document.getElementById('regAddress').value;
-    const name = document.getElementById('regName').value;
-    const funds = document.getElementById('regFunds').value;
+    async function registerDepartment() {
+      const address = document.getElementById('regAddress').value;
+      const name = document.getElementById('regName').value;
+      const funds = document.getElementById('regFunds').value;
+      await contract.methods.registerDepartment(address, name, funds).send({ from: currentAccount });
+      alert('Department Registered');
+    }
 
-    await contract.methods.registerDepartment(addr, name, funds).send({ from: currentAccount });
-    alert("Department registered.");
-  }
+    async function allocateFunds() {
+      const address = document.getElementById('allocAddress').value;
+      const amount = document.getElementById('allocAmount').value;
+      await contract.methods.allocateMoreFunds(address, amount).send({ from: currentAccount });
+      alert('Funds Allocated');
+    }
 
-  async function allocateFunds() {
-    const addr = document.getElementById('allocAddress').value;
-    const amount = document.getElementById('allocAmount').value;
+    async function spendFunds() {
+      const amount = document.getElementById('spendAmount').value;
+      const purpose = document.getElementById('spendPurpose').value;
+      await contract.methods.spendFunds(amount, purpose).send({ from: currentAccount });
+      alert('Funds Spent');
+    }
 
-    await contract.methods.allocateMoreFunds(addr, amount).send({ from: currentAccount });
-    alert("Funds allocated.");
-  }
-
-  async function spendFunds() {
-    const amount = document.getElementById('spendAmount').value;
-    const purpose = document.getElementById('spendPurpose').value;
-
-    await contract.methods.spendFunds(amount, purpose).send({ from: currentAccount });
-    alert("Funds spent.");
-  }
-
-  async function getInfo() {
-    const addr = document.getElementById('infoAddress').value;
-    const result = await contract.methods.getDepartmentInfo(addr).call();
-
-    document.getElementById('infoOutput').innerText = 
-      `Name: ${result[0]}\nAllocated: ${result[1]}\nSpent: ${result[2]}`;
-  }
-
-  window.addEventListener('load', loadWeb3);
-</script>
+    async function getInfo() {
+      const address = document.getElementById('infoAddress').value;
+      const data = await contract.methods.getDepartmentInfo(address).call();
+      document.getElementById('infoOutput').textContent = `Name: ${data[0]}\nAllocated: ${data[1]}\nSpent: ${data[2]}`;
+    }
+  </script>
 </body>
 </html>
