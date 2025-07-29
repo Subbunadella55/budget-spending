@@ -12,14 +12,6 @@
       padding: 0;
     }
 
-    #metaStatus {
-      background: #ffe0cc;
-      color: #800000;
-      padding: 12px;
-      text-align: center;
-      font-weight: bold;
-    }
-
     h2 {
       text-align: center;
       padding: 20px;
@@ -73,6 +65,7 @@
       cursor: pointer;
       font-size: 15px;
       transition: background-color 0.3s ease;
+      margin-top: 10px;
     }
 
     button:hover {
@@ -86,13 +79,24 @@
       white-space: pre-wrap;
       font-size: 14px;
     }
+
+    #walletStatus {
+      text-align: center;
+      font-weight: bold;
+      padding: 10px;
+      background-color: #ffffcc;
+      color: #333;
+    }
+
   </style>
 </head>
 <body>
 
-  <div id="metaStatus">Checking MetaMask...</div>
-
   <h2>Government Budget Tracker (Blockchain)</h2>
+  <div id="walletStatus">🔌 Wallet not connected</div>
+  <div style="text-align:center;">
+    <button onclick="connectMetaMask()">Connect Wallet</button>
+  </div>
 
   <div class="section">
     <h3>Register Department</h3>
@@ -136,114 +140,24 @@
     let contract;
     let currentAccount;
 
-    const contractAddress = 'YOUR_DEPLOYED_CONTRACT_ADDRESS'; // 👈 Replace this
-    const contractABI = [ /* 👇 Paste your ABI here */
-      {
-        "inputs": [],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          { "indexed": false, "internalType": "address", "name": "deptAddress", "type": "address" },
-          { "indexed": false, "internalType": "string", "name": "name", "type": "string" },
-          { "indexed": false, "internalType": "uint256", "name": "allocatedFunds", "type": "uint256" }
-        ],
-        "name": "DepartmentRegistered",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          { "indexed": false, "internalType": "address", "name": "deptAddress", "type": "address" },
-          { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
-        ],
-        "name": "FundsAllocated",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          { "indexed": false, "internalType": "address", "name": "deptAddress", "type": "address" },
-          { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
-          { "indexed": false, "internalType": "string", "name": "purpose", "type": "string" }
-        ],
-        "name": "FundSpent",
-        "type": "event"
-      },
-      {
-        "inputs": [
-          { "internalType": "address", "name": "deptAddress", "type": "address" },
-          { "internalType": "uint256", "name": "amount", "type": "uint256" }
-        ],
-        "name": "allocateMoreFunds",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          { "internalType": "address", "name": "deptAddress", "type": "address" }
-        ],
-        "name": "getDepartmentInfo",
-        "outputs": [
-          { "internalType": "string", "name": "", "type": "string" },
-          { "internalType": "uint256", "name": "", "type": "uint256" },
-          { "internalType": "uint256", "name": "", "type": "uint256" }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          { "internalType": "address", "name": "deptAddress", "type": "address" },
-          { "internalType": "string", "name": "name", "type": "string" },
-          { "internalType": "uint256", "name": "initialFunds", "type": "uint256" }
-        ],
-        "name": "registerDepartment",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          { "internalType": "uint256", "name": "amount", "type": "uint256" },
-          { "internalType": "string", "name": "purpose", "type": "string" }
-        ],
-        "name": "spendFunds",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      }
+    const contractAddress = 'YOUR_CONTRACT_ADDRESS_HERE'; // Replace this
+    const contractABI = [ 
+      // 👉 Replace this array with your actual ABI JSON from Remix
     ];
 
-    window.addEventListener('load', loadWeb3);
-
-    async function loadWeb3() {
-      const statusEl = document.getElementById('metaStatus');
-
+    async function connectMetaMask() {
       if (window.ethereum) {
-        web3 = new Web3(window.ethereum);
-
         try {
           const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
           currentAccount = accounts[0];
-
-          statusEl.style.background = '#d4edda';
-          statusEl.style.color = '#155724';
-          statusEl.innerText = "✅ MetaMask Connected: " + currentAccount;
-
+          document.getElementById("walletStatus").innerText = "✅ Connected: " + currentAccount;
+          web3 = new Web3(window.ethereum);
           contract = new web3.eth.Contract(contractABI, contractAddress);
-        } catch (error) {
-          statusEl.style.background = '#f8d7da';
-          statusEl.style.color = '#721c24';
-          statusEl.innerText = "❌ MetaMask connection rejected.";
+        } catch (err) {
+          document.getElementById("walletStatus").innerText = "❌ Access denied";
         }
       } else {
-        statusEl.style.background = '#fff3cd';
-        statusEl.style.color = '#856404';
-        statusEl.innerText = "⚠️ MetaMask not detected. Please install MetaMask.";
+        document.getElementById("walletStatus").innerText = "⚠️ MetaMask not installed.";
       }
     }
 
@@ -252,28 +166,30 @@
       const name = document.getElementById('regName').value;
       const funds = document.getElementById('regFunds').value;
       await contract.methods.registerDepartment(address, name, funds).send({ from: currentAccount });
-      alert('Department Registered');
+      alert("✅ Department registered");
     }
 
     async function allocateFunds() {
       const address = document.getElementById('allocAddress').value;
       const amount = document.getElementById('allocAmount').value;
       await contract.methods.allocateMoreFunds(address, amount).send({ from: currentAccount });
-      alert('Funds Allocated');
+      alert("✅ Funds allocated");
     }
 
     async function spendFunds() {
       const amount = document.getElementById('spendAmount').value;
       const purpose = document.getElementById('spendPurpose').value;
       await contract.methods.spendFunds(amount, purpose).send({ from: currentAccount });
-      alert('Funds Spent');
+      alert("✅ Funds spent");
     }
 
     async function getInfo() {
       const address = document.getElementById('infoAddress').value;
       const data = await contract.methods.getDepartmentInfo(address).call();
-      document.getElementById('infoOutput').textContent = `Name: ${data[0]}\nAllocated: ${data[1]}\nSpent: ${data[2]}`;
+      document.getElementById('infoOutput').textContent =
+        `Name: ${data[0]}\nAllocated: ${data[1]}\nSpent: ${data[2]}`;
     }
   </script>
+
 </body>
 </html>
